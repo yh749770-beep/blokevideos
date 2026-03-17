@@ -18,14 +18,17 @@
 
     <video
         id="my-video"
-        class="video-js"
+        class="video-js vjs-default-skin"
         controls
         preload="auto"
         width="900"
         height="500"
+        playsinline
+        crossorigin="anonymous"
         data-setup="{}"
     >
         <source src="{{ video_url }}" type="application/x-mpegURL">
+        הדפדפן שלך לא תומך בניגון וידאו
     </video>
 
     <form method="post" action="{{ url_for('logout') }}">
