@@ -34,6 +34,42 @@ ALLOWED_EMAILS = {
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
 BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
 
+def reset_user_ip(email: str):
+    conn = db()
+    try:
+        conn.execute(
+            "UPDATE users SET locked_ip = NULL WHERE email = ?",
+            (email,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+@app.route("/admin/users")
+def admin_users():
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
+
+    conn = db()
+    try:
+        rows = conn.execute(
+            "SELECT email, locked_ip FROM users ORDER BY email"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    return render_template("admin_users.html", rows=rows)
+
+
+@app.route("/admin/reset-ip/<path:email>", methods=["POST"])
+def admin_reset_ip(email):
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
+
+    reset_user_ip(email)
+    return redirect(url_for("admin_users"))
+
 
 def normalize_bunny_host(host: str) -> str:
     host = host.strip()
