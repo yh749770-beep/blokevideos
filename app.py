@@ -1,37 +1,7 @@
-import os
-import sqlite3
+import time
 import base64
 import hashlib
-import time
 import urllib.parse
-from flask import Flask, request, session, redirect, url_for, render_template, abort
-
-app = Flask(__name__)
-app.secret_key = os.environ["FLASK_SECRET_KEY"]
-
-DB_PATH = "app.db"
-
-VIDEOS = {
-    "intro": {
-        "title": "מבוא",
-        "video_id": "642da5d1-57b4-4787-8265-197fdf951487",
-    },
-    "lesson2": {
-        "title": "שיעור 2",
-        "video_id": "18bb5caf-12f7-443d-8d94-53a26b5e9c03",
-    },
-    "lesson3": {
-        "title": "שיעור 3",
-        "video_id": "055a7f5c-66f0-432a-ab4f-2a592ffc0a34",
-    },
-}
-
-BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
-BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
-
-ALLOWED_EMAILS = {
-    "yh749770@gmail.com"
-}
 
 
 def normalize_bunny_host(host: str) -> str:
@@ -45,10 +15,10 @@ def bunny_token_b64(data: bytes) -> str:
     return base64.b64encode(data).decode("utf-8").replace("+", "-").replace("/", "_").replace("=", "")
 
 
-def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: str | None = None) -> str:
+def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: str = "") -> str:
     expires = int(time.time()) + expires_in_seconds
-
     host = normalize_bunny_host(BUNNY_CDN_HOST)
+
     playlist_path = f"/{video_id}/playlist.m3u8"
     token_path = f"/{video_id}/"
 
@@ -56,28 +26,26 @@ def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: s
         "token_path": token_path
     }
 
+    # חשוב: בלי URL-encoding בתוך ה-hash
     sorted_params = "&".join(
-        f"{key}={urllib.parse.quote(str(params[key]), safe='')}"
+        f"{key}={params[key]}"
         for key in sorted(params.keys())
+        if key not in ("token", "expires")
     )
 
-    hashable = f"{BUNNY_CDN_TOKEN_KEY}{token_path}{expires}"
-    if user_ip:
-        hashable += user_ip
-    if sorted_params:
-        hashable += sorted_params
+    signed_path = token_path
 
+    hashable = f"{BUNNY_CDN_TOKEN_KEY}{signed_path}{expires}{user_ip}{sorted_params}"
     digest = hashlib.sha256(hashable.encode("utf-8")).digest()
     token = bunny_token_b64(digest)
 
-    query = {
-        "token": token,
+    # עדיף path-based token עבור HLS
+    query_string = urllib.parse.urlencode({
         "expires": expires,
-        **params
-    }
+        "token_path": token_path
+    })
 
-    query_string = urllib.parse.urlencode(query)
-    return f"https://{host}{playlist_path}?{query_string}"
+    return f"https://{host}/bcdn_token={token}&{query_string}{playlist_path}"
 
 
 def db():
