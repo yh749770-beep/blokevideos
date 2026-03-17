@@ -10,6 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
 DB_PATH = "app.db"
+
 VIDEOS = {
     "intro": {
         "title": "מבוא",
@@ -33,30 +34,42 @@ ALLOWED_EMAILS = {
 }
 
 
-def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 900) -> str:
+def bunny_token_b64(data: bytes) -> str:
+    return base64.b64encode(data).decode("utf-8").replace("+", "-").replace("/", "_").replace("=", "")
+
+
+def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: str | None = None) -> str:
     expires = int(time.time()) + expires_in_seconds
 
     playlist_path = f"/{video_id}/playlist.m3u8"
     token_path = f"/{video_id}/"
 
     params = {
-        "token_path": token_path,
+        "token_path": token_path
     }
 
-    sorted_params = "&".join(f"{k}={params[k]}" for k in sorted(params))
-    hashable = f"{BUNNY_CDN_TOKEN_KEY}{token_path}{expires}{sorted_params}"
+    sorted_params = "&".join(
+        f"{key}={urllib.parse.quote(str(params[key]), safe='')}"
+        for key in sorted(params.keys())
+    )
+
+    hashable = f"{BUNNY_CDN_TOKEN_KEY}{token_path}{expires}"
+    if user_ip:
+        hashable += user_ip
+    if sorted_params:
+        hashable += sorted_params
 
     digest = hashlib.sha256(hashable.encode("utf-8")).digest()
-    token = base64.b64encode(digest).decode("utf-8")
-    token = token.replace("+", "-").replace("/", "_").replace("=", "")
+    token = bunny_token_b64(digest)
 
-    encoded_token_path = urllib.parse.quote(token_path, safe="")
+    query = {
+        "token": token,
+        "expires": expires,
+        **params
+    }
 
-    return (
-        f"https://{BUNNY_CDN_HOST}"
-        f"/bcdn_token={token}&expires={expires}&token_path={encoded_token_path}"
-        f"{playlist_path}"
-    )
+    query_string = urllib.parse.urlencode(query)
+    return f"https://{BUNNY_CDN_HOST}{playlist_path}?{query_string}"
 
 
 def db():
@@ -76,6 +89,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 init_db()
 
 
@@ -88,38 +102,40 @@ def get_client_ip() -> str:
 
 def upsert_user(email: str):
     conn = db()
-    conn.execute(
-        "INSERT OR IGNORE INTO users(email, locked_ip) VALUES(?, NULL)",
-        (email,)
-    )
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute(
+            "INSERT OR IGNORE INTO users(email, locked_ip) VALUES(?, NULL)",
+            (email,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def lock_or_check_ip(email: str, current_ip: str) -> bool:
     conn = db()
-    row = conn.execute(
-        "SELECT locked_ip FROM users WHERE email = ?",
-        (email,)
-    ).fetchone()
+    try:
+        row = conn.execute(
+            "SELECT locked_ip FROM users WHERE email = ?",
+            (email,)
+        ).fetchone()
 
-    if not row:
+        if not row:
+            return False
+
+        locked_ip = row["locked_ip"]
+
+        if locked_ip is None:
+            conn.execute(
+                "UPDATE users SET locked_ip = ? WHERE email = ?",
+                (current_ip, email)
+            )
+            conn.commit()
+            return True
+
+        return locked_ip == current_ip
+    finally:
         conn.close()
-        return False
-
-    locked_ip = row["locked_ip"]
-
-    if locked_ip is None:
-        conn.execute(
-            "UPDATE users SET locked_ip = ? WHERE email = ?",
-            (current_ip, email)
-        )
-        conn.commit()
-        conn.close()
-        return True
-
-    conn.close()
-    return locked_ip == current_ip
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -151,9 +167,12 @@ def watch(lesson_key):
     if not video:
         abort(404)
 
-    signed_url = sign_bunny_hls_url(video["video_id"])
+    signed_url = sign_bunny_hls_url(
+        video_id=video["video_id"],
+        expires_in_seconds=3600
+    )
 
-
+    print("SIGNED URL:", signed_url)
 
     return render_template(
         "watch.html",
@@ -170,4 +189,5 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
