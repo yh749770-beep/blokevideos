@@ -33,7 +33,20 @@ ALLOWED_EMAILS = {
 
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
 BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
+@app.route("/admin/reset-all-ips", methods=["POST"])
+def admin_reset_all_ips():
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
 
+    conn = db()
+    try:
+        conn.execute("UPDATE users SET locked_ip = NULL")
+        conn.commit()
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_users"))
 def reset_user_ip(email: str):
     conn = db()
     try:
