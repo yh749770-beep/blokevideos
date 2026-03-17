@@ -10,7 +10,6 @@ app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
 DB_PATH = "app.db"
-
 VIDEOS = {
     "intro": {
         "title": "מבוא",
