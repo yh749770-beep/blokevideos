@@ -5,7 +5,10 @@ import hashlib
 import time
 import urllib.parse
 from flask import Flask, request, session, redirect, url_for, render_template, abort
+app = Flask(__name__)
+app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
+DB_PATH = "app.db"
 def normalize_bunny_host(host: str) -> str:
     host = host.strip()
     host = host.replace("https://", "").replace("http://", "")
