@@ -77,6 +77,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+init_db()
+
 
 def get_client_ip() -> str:
     forwarded_for = request.headers.get("X-Forwarded-For", "").strip()
@@ -170,5 +172,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
