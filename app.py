@@ -124,21 +124,10 @@ def lock_or_check_ip(email: str, current_ip: str) -> bool:
 
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def home():
-    if request.method == "GET":
-        email = session.get("email")
-        if email:
-            return redirect(url_for("watch", lesson_key="intro"))
-        return render_template("login.html")
+    return "HOME OK"
 
-    email = request.form.get("email", "").strip().lower()
-
-    if email not in ALLOWED_EMAILS:
-        return "המייל הזה לא מורשה", 403
-
-    upsert_user(email)
-    session["email"] = email
-    return redirect(url_for("watch", lesson_key="intro"))
 
 
 @app.route("/watch/<lesson_key>")
