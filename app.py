@@ -176,51 +176,28 @@ def lock_or_check_ip(email: str, current_ip: str) -> bool:
 
 
     # ---------- Routes ----------
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def home():
-    email = session.get("email")
-    if email:
-        return redirect(url_for("watch", lesson_key="intro"))
-    return render_template("login.html")
+    if request.method == "GET":
+        email = session.get("email")
+        if email:
+            return redirect(url_for("watch", lesson_key="intro"))
+        return render_template("login.html")
 
-
-@app.route("/request-code", methods=["POST"])
-def request_code():
     email = request.form.get("email", "").strip().lower()
 
     if email not in ALLOWED_EMAILS:
         return "המייל הזה לא מורשה", 403
 
     upsert_user(email)
-
-    code = f"{secrets.randbelow(1000000):06d}"
-    save_otp(email, code)
-
-    try:
-        send_email_code(email, code)
-    except Exception as e:
-        return f"שגיאה בשליחת מייל: {e}", 500
-
-    session["pending_email"] = email
-    return redirect(url_for("verify_page"))
-
-
-@app.route("/verify", methods=["GET", "POST"])
-def verify_page():
-    pending_email = session.get("pending_email")
-    if not pending_email:
-        return redirect(url_for("home"))
-
-    if request.method == "GET":
-        return render_template("verify.html", email=pending_email)
-
-    code = request.form.get("code", "").strip()
-    if not verify_otp(pending_email, code):
-        return "קוד לא תקין או שפג תוקפו", 403
-
-    session.pop("pending_email", None)
-    session["email"] = pending_email
+    session["email"] = email
     return redirect(url_for("watch", lesson_key="intro"))
+
+
+
+
+
+
 
 @app.route("/watch/<lesson_key>")
 def watch(lesson_key):
