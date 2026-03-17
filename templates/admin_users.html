@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ניהול משתמשים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: right;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        form {
+            margin: 0;
+        }
+
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .top-links {
+            margin-bottom: 20px;
+        }
+
+        .top-links a {
+            margin-left: 12px;
+        }
+
+        .actions-bar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-links">
+        <a href="{{ url_for('home') }}">חזרה</a>
+        <a href="{{ url_for('logout') }}">התנתקות</a>
+    </div>
+
+    <h1>ניהול משתמשים</h1>
+
+    <div class="actions-bar">
+        <form method="post" action="{{ url_for('admin_reset_all_ips') }}">
+            <button type="submit">Reset All IPs</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>מייל</th>
+                <th>IP שמור</th>
+                <th>פעולה</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.email }}</td>
+                <td>{{ row.locked_ip or "" }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('admin_reset_ip', email=row.email) }}">
+                        <button type="submit">Reset IP</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
