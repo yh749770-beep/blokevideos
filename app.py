@@ -5,6 +5,23 @@ import hashlib
 import time
 import urllib.parse
 from flask import Flask, request, session, redirect, url_for, render_template, abort
+import os
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "home ok"
+
+@app.route("/health")
+def health():
+    return "ok"
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+    
 app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
