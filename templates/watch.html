@@ -2,44 +2,14 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-    <style>
-        body { font-family: sans-serif; background-color: #f0f2f5; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .main-container { display: flex; max-width: 1100px; width: 100%; margin-top: 20px; gap: 20px; padding: 20px; }
-        .video-section { flex: 3; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .sidebar h3 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .lesson-link { display: block; padding: 10px; text-decoration: none; color: #333; border-bottom: 1px solid #eee; }
-        .lesson-link:hover { background-color: #f8f9fa; }
-        .active { font-weight: bold; color: #007bff; background: #e7f1ff; }
-    </style>
+    <title>כניסה</title>
 </head>
 <body>
-
-    <div class="main-container">
-        <div class="video-section">
-            <h1>{{ title }}</h1>
-            <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="900" height="500">
-                <source src="{{ video_url }}" type="application/x-mpegURL">
-            </video>
-            <p><a href="/logout">התנתקות</a></p>
-        </div>
-
-        <div class="sidebar">
-            <h3>רשימת שיעורים</h3>
-            {% for key, v in all_videos.items() %}
-                <a href="{{ url_for('watch', lesson_key=key) }}"
-                   class="lesson-link {% if v.title == title %}active{% endif %}">
-                    {{ v.title }}
-                </a>
-            {% endfor %}
-        </div>
-    </div>
-
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-    </script>
+    <h1>כניסה</h1>
+    <form method="post" action="/">
+        <label for="email">מייל:</label>
+        <input type="email" id="email" name="email" required>
+        <button type="submit">כניסה</button>
+    </form>
 </body>
 </html>
