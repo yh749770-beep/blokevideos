@@ -152,7 +152,7 @@ def watch(lesson_key):
         abort(404)
 
     signed_url = sign_bunny_hls_url(video["video_id"])
-    print("SIGNED URL:", signed_url)
+
 
     return render_template(
         "watch.html",
