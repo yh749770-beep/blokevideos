@@ -34,6 +34,13 @@ ALLOWED_EMAILS = {
 }
 
 
+def normalize_bunny_host(host: str) -> str:
+    host = host.strip()
+    host = host.replace("https://", "").replace("http://", "")
+    host = host.strip("/")
+    return host
+
+
 def bunny_token_b64(data: bytes) -> str:
     return base64.b64encode(data).decode("utf-8").replace("+", "-").replace("/", "_").replace("=", "")
 
@@ -41,6 +48,7 @@ def bunny_token_b64(data: bytes) -> str:
 def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: str | None = None) -> str:
     expires = int(time.time()) + expires_in_seconds
 
+    host = normalize_bunny_host(BUNNY_CDN_HOST)
     playlist_path = f"/{video_id}/playlist.m3u8"
     token_path = f"/{video_id}/"
 
@@ -69,7 +77,7 @@ def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: s
     }
 
     query_string = urllib.parse.urlencode(query)
-    return f"https://{BUNNY_CDN_HOST}{playlist_path}?{query_string}"
+    return f"https://{host}{playlist_path}?{query_string}"
 
 
 def db():
