@@ -27,8 +27,8 @@ VIDEOS = {
 }
 
 ALLOWED_EMAILS = {
-    "yh749770@gmail.com"
-    "yigalhu@post.bgu.ac.il"
+    "yh749770@gmail.com",
+    "yigalhu@post.bgu.ac.il",
 }
 
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
