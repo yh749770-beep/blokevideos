@@ -1,15 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .content {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .lesson-link {
+            display: block;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: #111827;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        .lesson-link:hover {
+            background: #e5e7eb;
+        }
+
+        .topbar {
+            margin-bottom: 16px;
+        }
+
+        .logout-btn {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>כניסה לצפייה</h1>
-  <form method="post" action="/">
-    <label>מייל:</label>
-    <input type="email" name="email" required>
-    <button type="submit">כניסה</button>
-  </form>
+    <div class="container">
+        <div class="sidebar">
+            <h3>רשימת שיעורים</h3>
+            <a class="lesson-link" href="{{ url_for('watch', lesson_key='intro') }}">מבוא</a>
+            <a class="lesson-link" href="{{ url_for('watch', lesson_key='lesson2') }}">שיעור 2</a>
+            <a class="lesson-link" href="{{ url_for('watch', lesson_key='lesson3') }}">שיעור 3</a>
+        </div>
+
+        <div class="content">
+            <div class="topbar">
+                <form method="post" action="{{ url_for('logout') }}">
+                    <button class="logout-btn" type="submit">התנתקות</button>
+                </form>
+            </div>
+
+            <h1>{{ title }}</h1>
+
+            <video
+                id="my-video"
+                class="video-js"
+                controls
+                preload="auto"
+                width="900"
+                height="500"
+                data-setup="{}"
+            >
+                <source src="{{ video_url }}" type="application/x-mpegURL">
+            </video>
+        </div>
+    </div>
+
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 </body>
 </html>
