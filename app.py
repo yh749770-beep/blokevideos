@@ -126,9 +126,6 @@ def lock_or_check_ip(email: str, current_ip: str) -> bool:
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "GET":
-        email = session.get("email")
-        if email:
-            return redirect(url_for("watch", lesson_key="intro"))
         return render_template("login.html")
 
     email = request.form.get("email", "").strip().lower()
