@@ -5,27 +5,35 @@ import hashlib
 import time
 import urllib.parse
 from flask import Flask, request, session, redirect, url_for, render_template, abort
-import os
-from flask import Flask
 
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "home ok"
-
-@app.route("/health")
-def health():
-    return "ok"
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, debug=False)
-    
 app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
 DB_PATH = "app.db"
+
+VIDEOS = {
+    "intro": {
+        "title": "מבוא",
+        "video_id": "642da5d1-57b4-4787-8265-197fdf951487",
+    },
+    "lesson2": {
+        "title": "שיעור 2",
+        "video_id": "18bb5caf-12f7-443d-8d94-53a26b5e9c03",
+    },
+    "lesson3": {
+        "title": "שיעור 3",
+        "video_id": "055a7f5c-66f0-432a-ab4f-2a592ffc0a34",
+    },
+}
+
+ALLOWED_EMAILS = {
+    "yh749770@gmail.com"
+}
+
+BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
+BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
+
+
 def normalize_bunny_host(host: str) -> str:
     host = host.strip()
     host = host.replace("https://", "").replace("http://", "")
@@ -48,7 +56,6 @@ def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: s
         "token_path": token_path
     }
 
-    # חשוב: בלי URL-encoding בתוך ה-hash
     sorted_params = "&".join(
         f"{key}={params[key]}"
         for key in sorted(params.keys())
@@ -61,7 +68,6 @@ def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: s
     digest = hashlib.sha256(hashable.encode("utf-8")).digest()
     token = bunny_token_b64(digest)
 
-    # עדיף path-based token עבור HLS
     query_string = urllib.parse.urlencode({
         "expires": expires,
         "token_path": token_path
@@ -134,6 +140,11 @@ def lock_or_check_ip(email: str, current_ip: str) -> bool:
         return locked_ip == current_ip
     finally:
         conn.close()
+
+
+@app.route("/health")
+def health():
+    return "ok"
 
 
 @app.route("/", methods=["GET", "POST"])
