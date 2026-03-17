@@ -139,19 +139,7 @@ def home():
 
 @app.route("/watch/<lesson_key>")
 def watch(lesson_key):
-    email = session.get("email")
-    if not email:
-        return redirect(url_for("home"))
-
-    current_ip = get_client_ip()
-    if not lock_or_check_ip(email, current_ip):
-        return "גישה חסומה: IP נעול", 403
-
-    video = VIDEOS.get(lesson_key)
-    if not video:
-        abort(404)
-
-    signed_url = sign_bunny_hls_url(video["video_id"])
+    return "WATCH OK"
 
 
     return render_template(
