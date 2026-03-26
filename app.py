@@ -34,7 +34,7 @@ ALLOWED_EMAILS = {
     "Itamarl5577@gmail.com",
     
 }
-
+ALLOWED_EMAILS = {e.strip().lower() for e in ALLOWED_EMAILS}
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
 BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
 @app.route("/admin/reset-all-ips", methods=["POST"])
