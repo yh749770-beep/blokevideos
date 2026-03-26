@@ -12,18 +12,11 @@ app.secret_key = os.environ["FLASK_SECRET_KEY"]
 DB_PATH = "app.db"
 
 VIDEOS = {
-    "intro": {
+    "lesson1": {
         "title": "מפגש 1 - איך למצוא סיומת סטטית בקלות, איך למצוא הזזות באופן כללי וצירי בפרט, מה זה משוואת התאמה",
         "video_id": "642da5d1-57b4-4787-8265-197fdf951487",
     },
-    "lesson2": {
-        "title": "שיעור 2",
-        "video_id": "18bb5caf-12f7-443d-8d94-53a26b5e9c03",
-    },
-    "lesson3": {
-        "title": "שיעור 3",
-        "video_id": "055a7f5c-66f0-432a-ab4f-2a592ffc0a34",
-    },
+
 }
 
 ALLOWED_EMAILS = {
