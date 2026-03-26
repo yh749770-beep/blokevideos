@@ -213,7 +213,8 @@ def home():
 
     upsert_user(email)
     session["email"] = email
-    return redirect(url_for("watch", lesson_key="intro"))
+    first_lesson_key = next(iter(VIDEOS))
+    return redirect(url_for("watch", lesson_key=first_lesson_key))
 
 
 @app.route("/watch/<lesson_key>")
