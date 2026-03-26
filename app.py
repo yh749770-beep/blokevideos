@@ -13,7 +13,7 @@ DB_PATH = "app.db"
 
 VIDEOS = {
     "intro": {
-        "title": "מבוא",
+        "title": "מפגש 1 - איך למצוא סיומת סטטית בקלות, איך למצוא הזזות באופן כללי וצירי בפרט, מה זה משוואת התאמה",
         "video_id": "642da5d1-57b4-4787-8265-197fdf951487",
     },
     "lesson2": {
@@ -29,6 +29,17 @@ VIDEOS = {
 ALLOWED_EMAILS = {
     "yh749770@gmail.com",
     "yigalhu@post.bgu.ac.il",
+    "noamco2301@gmail.com",
+    "kotekshahaf@gmail.com",
+    "noamati2003@gmail.com",
+    "Dor62297@gmail.com",
+    "noga.benzoor1@gmail.com",
+    "yuvalsturm4@gmail.com",
+    "tomer.leshem@gmail.com",
+    "Ofek5314@gmail.com",
+    "Nave.liron1@gmail.com",
+    "Itamarl5577@gmail.com",
+    
 }
 
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
