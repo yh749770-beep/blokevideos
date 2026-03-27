@@ -211,7 +211,13 @@ def home():
     if email not in ALLOWED_EMAILS:
         return "המייל הזה לא מורשה", 403
 
+    current_ip = get_client_ip()
+
     upsert_user(email)
+
+    if not lock_or_check_ip(email, current_ip):
+        return "המייל הזה כבר מחובר מכתובת IP אחרת", 403
+
     session["email"] = email
     first_lesson_key = next(iter(VIDEOS))
     return redirect(url_for("watch", lesson_key=first_lesson_key))
