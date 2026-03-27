@@ -55,7 +55,7 @@ def reset_user_ip(email: str):
     conn = db()
     try:
         conn.execute(
-            "UPDATE users SET locked_ip = NULL WHERE email = ?",
+            "UPDATE users SET locked_ip = NULL WHERE email = %s",
             (email,)
         )
         conn.commit()
@@ -131,9 +131,7 @@ def sign_bunny_hls_url(video_id: str, expires_in_seconds: int = 3600, user_ip: s
 
 
 def db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return psycopg.connect(DATABASE_URL)
 
 
 def init_db():
@@ -162,30 +160,29 @@ def upsert_user(email: str):
     conn = db()
     try:
         conn.execute(
-            "INSERT OR IGNORE INTO users(email, locked_ip) VALUES(?, NULL)",
+            "INSERT INTO users(email, locked_ip) VALUES(%s, NULL) ON CONFLICT (email) DO NOTHING",
             (email,)
         )
         conn.commit()
     finally:
         conn.close()
 
-
 def lock_or_check_ip(email: str, current_ip: str) -> bool:
     conn = db()
     try:
         row = conn.execute(
-            "SELECT locked_ip FROM users WHERE email = ?",
+            "SELECT locked_ip FROM users WHERE email = %s",
             (email,)
         ).fetchone()
 
         if not row:
             return False
 
-        locked_ip = row["locked_ip"]
+        locked_ip = row[0]
 
         if locked_ip is None:
             conn.execute(
-                "UPDATE users SET locked_ip = ? WHERE email = ?",
+                "UPDATE users SET locked_ip = %s WHERE email = %s",
                 (current_ip, email)
             )
             conn.commit()
