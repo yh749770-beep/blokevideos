@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
 </head>
 <body>
     <h1>{{ title }}</h1>
@@ -16,12 +15,18 @@
 
     <br>
 
-<iframe
-    src="https://player.mediadelivery.net/embed/618406/{{ video_id }}"
-    loading="lazy"
-    style="border:0; width:900px; height:500px; max-width:100%;"
-    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-    allowfullscreen
-></iframe>
+    <iframe
+        src="https://player.mediadelivery.net/embed/618406/{{ video_id }}"
+        loading="lazy"
+        style="border:0; width:900px; height:500px; max-width:100%;"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen
+    ></iframe>
+
+    <br><br>
+
+    <form method="post" action="{{ url_for('logout') }}">
+        <button type="submit">התנתקות</button>
+    </form>
 </body>
 </html>
