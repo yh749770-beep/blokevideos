@@ -16,29 +16,12 @@
 
     <br>
 
-    <video
-        id="my-video"
-        class="video-js vjs-default-skin"
-        controls
-        preload="auto"
-        width="900"
-        height="500"
-        playsinline
-        crossorigin="anonymous"
-        data-setup="{}"
-    >
-        <source src="{{ video_url }}" type="application/x-mpegURL">
-        הדפדפן שלך לא תומך בניגון וידאו
-    </video>
-
-    <form method="post" action="{{ url_for('logout') }}">
-        <button type="submit">התנתקות</button>
-    </form>
-<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-<script>
-    const player = videojs('my-video', {
-        playbackRates: [0.75, 1, 1.25, 1.5, 2]
-    });
-</script>
+<iframe
+    src="https://iframe.mediadelivery.net/embed/618406/{{ video_id }}"
+    loading="lazy"
+    style="border:0; width:900px; height:500px; max-width:100%;"
+    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen
+></iframe>
 </body>
 </html>
