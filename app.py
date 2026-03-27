@@ -1,5 +1,5 @@
 import os
-import sqlite3
+import psycopg
 import base64
 import hashlib
 import time
@@ -9,7 +9,7 @@ from flask import Flask, request, session, redirect, url_for, render_template, a
 app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 
-DB_PATH = "app.db"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 VIDEOS = {
     "lesson1": {
