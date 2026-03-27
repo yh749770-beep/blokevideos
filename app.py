@@ -69,12 +69,13 @@ def admin_users():
 
     conn = db()
     try:
-        rows = conn.execute(
+        raw_rows = conn.execute(
             "SELECT email, locked_ip FROM users ORDER BY email"
         ).fetchall()
     finally:
         conn.close()
 
+    rows = [{"email": r[0], "locked_ip": r[1]} for r in raw_rows]
     return render_template("admin_users.html", rows=rows)
 
 
