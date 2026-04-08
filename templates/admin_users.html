@@ -61,8 +61,8 @@
     <h1>ניהול משתמשים</h1>
 
     <div class="actions-bar">
-        <form method="post" action="{{ url_for('admin_reset_all_ips') }}">
-            <button type="submit">Reset All IPs</button>
+        <form method="post" action="{{ url_for('admin_reset_all_devices') }}">
+            <button type="submit">Reset All Devices</button>
         </form>
     </div>
 
@@ -70,7 +70,7 @@
         <thead>
             <tr>
                 <th>מייל</th>
-                <th>IP שמור</th>
+                <th>סטטוס מכשיר</th>
                 <th>פעולה</th>
             </tr>
         </thead>
@@ -78,10 +78,16 @@
             {% for row in rows %}
             <tr>
                 <td>{{ row.email }}</td>
-                <td>{{ row.locked_ip or "" }}</td>
                 <td>
-                    <form method="post" action="{{ url_for('admin_reset_ip', email=row.email) }}">
-                        <button type="submit">Reset IP</button>
+                    {% if row.has_device %}
+                        משויך לדפדפן
+                    {% else %}
+                        לא משויך
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('admin_reset_device', email=row.email) }}">
+                        <button type="submit">Reset Device</button>
                     </form>
                 </td>
             </tr>
