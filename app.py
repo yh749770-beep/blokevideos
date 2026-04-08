@@ -25,7 +25,6 @@ VIDEOS = {
 }
 
 ALLOWED_EMAILS = {
-    "yh749770@gmail.com",
     "yigalhu@post.bgu.ac.il",
     "noamco2301@gmail.com",
     "kotekshahaf@gmail.com",
@@ -39,6 +38,11 @@ ALLOWED_EMAILS = {
     "Itamarl5577@gmail.com",
     
 }
+ADMIN_EMAIL = "yh749770@gmail.com"
+
+def is_admin_email(email: str) -> bool:
+    return email.strip().lower() == ADMIN_EMAIL
+    
 ALLOWED_EMAILS = {e.strip().lower() for e in ALLOWED_EMAILS}
 
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
@@ -206,7 +210,7 @@ def reset_user_device(email: str):
 @app.route("/admin/reset-all-devices", methods=["POST"])
 def admin_reset_all_devices():
     current = session.get("email")
-    if current != "yh749770@gmail.com":
+    if not is_admin_email(current):
         return "Forbidden", 403
 
     conn = db()
@@ -222,8 +226,8 @@ def admin_reset_all_devices():
 @app.route("/admin/users")
 def admin_users():
     current = session.get("email")
-    if current != "yh749770@gmail.com":
-        return "Forbidden", 403
+    if not is_admin_email(current):
+        return "Forbidden", 403    
 
     conn = db()
     try:
@@ -246,7 +250,7 @@ def admin_users():
 @app.route("/admin/reset-device/<path:email>", methods=["POST"])
 def admin_reset_device(email):
     current = session.get("email")
-    if current != "yh749770@gmail.com":
+    if not is_admin_email(current):
         return "Forbidden", 403
 
     reset_user_device(email)
@@ -269,12 +273,16 @@ def home():
         return "המייל הזה לא מורשה", 403
 
     upsert_user(email)
+    if is_admin_email(email):
+        session["email"] = email
+        first_lesson_key = next(iter(VIDEOS))
+        return redirect(url_for("watch", lesson_key=first_lesson_key))
 
     device_token = request.cookies.get(DEVICE_COOKIE_NAME)
     device_check = lock_or_check_device(email, device_token)
 
     if not device_check["ok"]:
-        return "המייל הזה כבר משויך לדפדפן אחר. אם זה אתה, צריך לעשות reset מהממשק של האדמין", 403
+        return "המייל הזה כבר משויך לדפדפן אחר", 403
 
     session["email"] = email
 
