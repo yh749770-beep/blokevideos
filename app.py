@@ -4,6 +4,7 @@ import base64
 import hashlib
 import time
 import urllib.parse
+import secrets
 from flask import Flask, request, session, redirect, url_for, render_template, abort
 
 app = Flask(__name__)
@@ -39,58 +40,12 @@ ALLOWED_EMAILS = {
     
 }
 ALLOWED_EMAILS = {e.strip().lower() for e in ALLOWED_EMAILS}
+
 BUNNY_CDN_HOST = os.environ["BUNNY_CDN_HOST"]
 BUNNY_CDN_TOKEN_KEY = os.environ["BUNNY_CDN_TOKEN_KEY"]
-@app.route("/admin/reset-all-ips", methods=["POST"])
-def admin_reset_all_ips():
-    current = session.get("email")
-    if current != "yh749770@gmail.com":
-        return "Forbidden", 403
 
-    conn = db()
-    try:
-        conn.execute("UPDATE users SET locked_ip = NULL")
-        conn.commit()
-    finally:
-        conn.close()
-
-    return redirect(url_for("admin_users"))
-def reset_user_ip(email: str):
-    conn = db()
-    try:
-        conn.execute(
-            "UPDATE users SET locked_ip = NULL WHERE email = %s",
-            (email,)
-        )
-        conn.commit()
-    finally:
-        conn.close()
-@app.route("/admin/users")
-def admin_users():
-    current = session.get("email")
-    if current != "yh749770@gmail.com":
-        return "Forbidden", 403
-
-    conn = db()
-    try:
-        raw_rows = conn.execute(
-            "SELECT email, locked_ip FROM users ORDER BY email"
-        ).fetchall()
-    finally:
-        conn.close()
-
-    rows = [{"email": r[0], "locked_ip": r[1]} for r in raw_rows]
-    return render_template("admin_users.html", rows=rows)
-
-
-@app.route("/admin/reset-ip/<path:email>", methods=["POST"])
-def admin_reset_ip(email):
-    current = session.get("email")
-    if current != "yh749770@gmail.com":
-        return "Forbidden", 403
-
-    reset_user_ip(email)
-    return redirect(url_for("admin_users"))
+DEVICE_COOKIE_NAME = "device_token"
+DEVICE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365  # 1 year
 
 
 def normalize_bunny_host(host: str) -> str:
@@ -139,63 +94,163 @@ def db():
     return psycopg.connect(DATABASE_URL)
 
 
+def make_device_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def hash_device_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def init_db():
     conn = db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            email TEXT PRIMARY KEY,
-            locked_ip TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                email TEXT PRIMARY KEY
+            )
+        """)
+        conn.execute("""
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS locked_device_hash TEXT
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 init_db()
-
-
-def get_client_ip() -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For", "").strip()
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    return request.remote_addr or "unknown"
 
 
 def upsert_user(email: str):
     conn = db()
     try:
         conn.execute(
-            "INSERT INTO users(email, locked_ip) VALUES(%s, NULL) ON CONFLICT (email) DO NOTHING",
+            """
+            INSERT INTO users(email, locked_device_hash)
+            VALUES(%s, NULL)
+            ON CONFLICT (email) DO NOTHING
+            """,
             (email,)
         )
         conn.commit()
     finally:
         conn.close()
 
-def lock_or_check_ip(email: str, current_ip: str) -> bool:
+
+def lock_or_check_device(email: str, device_token: str | None):
     conn = db()
     try:
         row = conn.execute(
-            "SELECT locked_ip FROM users WHERE email = %s",
+            "SELECT locked_device_hash FROM users WHERE email = %s",
             (email,)
         ).fetchone()
 
         if not row:
-            return False
+            return {
+                "ok": False,
+                "reason": "user_not_found",
+                "device_token": None,
+            }
 
-        locked_ip = row[0]
+        locked_device_hash = row[0]
 
-        if locked_ip is None:
+        if locked_device_hash is None:
+            token_to_store = device_token or make_device_token()
             conn.execute(
-                "UPDATE users SET locked_ip = %s WHERE email = %s",
-                (current_ip, email)
+                "UPDATE users SET locked_device_hash = %s WHERE email = %s",
+                (hash_device_token(token_to_store), email)
             )
             conn.commit()
-            return True
+            return {
+                "ok": True,
+                "reason": "new_device_locked",
+                "device_token": token_to_store,
+            }
 
-        return locked_ip == current_ip
+        if not device_token:
+            return {
+                "ok": False,
+                "reason": "missing_device_cookie",
+                "device_token": None,
+            }
+
+        if hash_device_token(device_token) != locked_device_hash:
+            return {
+                "ok": False,
+                "reason": "different_device",
+                "device_token": None,
+            }
+
+        return {
+            "ok": True,
+            "reason": "known_device",
+            "device_token": device_token,
+        }
     finally:
         conn.close()
+
+
+def reset_user_device(email: str):
+    conn = db()
+    try:
+        conn.execute(
+            "UPDATE users SET locked_device_hash = NULL WHERE email = %s",
+            (email,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+@app.route("/admin/reset-all-devices", methods=["POST"])
+def admin_reset_all_devices():
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
+
+    conn = db()
+    try:
+        conn.execute("UPDATE users SET locked_device_hash = NULL")
+        conn.commit()
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_users"))
+
+
+@app.route("/admin/users")
+def admin_users():
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
+
+    conn = db()
+    try:
+        raw_rows = conn.execute(
+            "SELECT email, locked_device_hash FROM users ORDER BY email"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    rows = [
+        {
+            "email": r[0],
+            "has_device": bool(r[1]),
+        }
+        for r in raw_rows
+    ]
+    return render_template("admin_users.html", rows=rows)
+
+
+@app.route("/admin/reset-device/<path:email>", methods=["POST"])
+def admin_reset_device(email):
+    current = session.get("email")
+    if current != "yh749770@gmail.com":
+        return "Forbidden", 403
+
+    reset_user_device(email)
+    return redirect(url_for("admin_users"))
 
 
 @app.route("/health")
@@ -213,16 +268,29 @@ def home():
     if email not in ALLOWED_EMAILS:
         return "המייל הזה לא מורשה", 403
 
-    current_ip = get_client_ip()
-
     upsert_user(email)
 
-    if not lock_or_check_ip(email, current_ip):
-        return "המייל הזה כבר מחובר מכתובת IP אחרת", 403
+    device_token = request.cookies.get(DEVICE_COOKIE_NAME)
+    device_check = lock_or_check_device(email, device_token)
+
+    if not device_check["ok"]:
+        return "המייל הזה כבר משויך לדפדפן אחר. אם זה אתה, צריך לעשות reset מהממשק של האדמין", 403
 
     session["email"] = email
+
     first_lesson_key = next(iter(VIDEOS))
-    return redirect(url_for("watch", lesson_key=first_lesson_key))
+    response = redirect(url_for("watch", lesson_key=first_lesson_key))
+
+    response.set_cookie(
+        DEVICE_COOKIE_NAME,
+        device_check["device_token"],
+        max_age=DEVICE_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+    )
+
+    return response
 
 
 @app.route("/watch/<lesson_key>")
