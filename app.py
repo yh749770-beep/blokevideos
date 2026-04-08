@@ -25,6 +25,7 @@ VIDEOS = {
 }
 
 ALLOWED_EMAILS = {
+    "yh749770@gmail.com",
     "yigalhu@post.bgu.ac.il",
     "noamco2301@gmail.com",
     "kotekshahaf@gmail.com",
@@ -39,6 +40,7 @@ ALLOWED_EMAILS = {
     
 }
 ADMIN_EMAIL = "yh749770@gmail.com"
+ADMIN_PASSWORD = os.environ["yigalhu890!"]
 
 def is_admin_email(email: str) -> bool:
     return email.strip().lower() == ADMIN_EMAIL
@@ -268,10 +270,15 @@ def home():
         return render_template("login.html")
 
     email = request.form.get("email", "").strip().lower()
-
+    password = request.form.get("password", "")
     if email not in ALLOWED_EMAILS:
         return "המייל הזה לא מורשה", 403
-
+    if is_admin_email(email):
+        if password != ADMIN_PASSWORD:
+            return "סיסמת מנהל שגויה", 403
+        session["email"] = email
+        first_lesson_key = next(iter(VIDEOS))
+        return redirect(url_for("watch", lesson_key=first_lesson_key))
     upsert_user(email)
     if is_admin_email(email):
         session["email"] = email
