@@ -271,15 +271,20 @@ def home():
 
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
+   
     if email not in ALLOWED_EMAILS:
         return "המייל הזה לא מורשה", 403
+    
     if is_admin_email(email):
         if password != ADMIN_PASSWORD:
             return "סיסמת מנהל שגויה", 403
+        
         session["email"] = email
         first_lesson_key = next(iter(VIDEOS))
         return redirect(url_for("watch", lesson_key=first_lesson_key))
+    
     upsert_user(email)
+    
     if is_admin_email(email):
         session["email"] = email
         first_lesson_key = next(iter(VIDEOS))
