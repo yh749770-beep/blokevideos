@@ -43,8 +43,8 @@ ADMIN_EMAIL = "yh749770@gmail.com"
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
 
-def is_admin_email(email: str) -> bool:
-    return email.strip().lower() == ADMIN_EMAIL
+def is_admin_email(email) -> bool:
+    return isinstance(email, str) and email.strip().lower() == ADMIN_EMAIL
     
 ALLOWED_EMAILS = {e.strip().lower() for e in ALLOWED_EMAILS}
 
