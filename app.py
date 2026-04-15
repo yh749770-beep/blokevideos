@@ -41,6 +41,7 @@ ALLOWED_EMAILS = {
     "Nave.liron1@gmail.com",
     "Itamarl5577@gmail.com",
     "danielgadi323@gmail.com",
+    "Orrshechter@gmail.com",
     
 }
 ADMIN_EMAIL = "yh749770@gmail.com"
