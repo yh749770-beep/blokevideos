@@ -37,6 +37,12 @@ VIDEOS = {
         "title": "מפגש 5 - פיתול, חלק 2 של עבודת בית 3",
         "video_id": "cf156263-a836-405d-b30f-4034bf0610c3",
     },
+    "lesson6": {
+        "title": "מפגש 6 - עבודת בית 4",
+        "video_id": "a748d3cf-3bb2-412c-8fac-b7b4c3d4c9b6",
+    },
+
+    
 }
 
 ALLOWED_EMAILS = {
