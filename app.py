@@ -44,19 +44,10 @@ ALLOWED_EMAILS = {
     "yigalhu@post.bgu.ac.il",
     "noamco2301@gmail.com",
     "kotekshahaf@gmail.com",
-    "noamati2003@gmail.com",
-    "Dor62297@gmail.com",
-    "noga.benzoor1@gmail.com",
     "yuvalsturm4@gmail.com",
     "tomer.leshem@gmail.com",
-    "Ofek5314@gmail.com",
     "Nave.liron1@gmail.com",
-    "Itamarl5577@gmail.com",
-    "danielgadi323@gmail.com",
-    "Orrshechter@gmail.com",
-    "itayweinreb@gmail.com",
-    "Itamarabir13@gmail.com",
-    
+    "Orrshechter@gmail.com", 
 }
 ADMIN_EMAIL = "yh749770@gmail.com"
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
