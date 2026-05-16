@@ -54,6 +54,9 @@ ALLOWED_EMAILS = {
     "tomer.leshem@gmail.com",
     "Nave.liron1@gmail.com",
     "Orrshechter@gmail.com", 
+    "danielgadi323@gmail.com",
+    "itayweinreb@gmail.com",
+    "Dor62297@gmail.com",
 }
 ADMIN_EMAIL = "yh749770@gmail.com"
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
