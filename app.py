@@ -42,7 +42,6 @@ VIDEOS = {
         "video_id": "a748d3cf-3bb2-412c-8fac-b7b4c3d4c9b6",
     },
 
-    
 }
 
 ALLOWED_EMAILS = {
@@ -57,6 +56,8 @@ ALLOWED_EMAILS = {
     "danielgadi323@gmail.com",
     "itayweinreb@gmail.com",
     "Dor62297@gmail.com",
+    "noga.benzoor1@gmail.com",
+    "noamati2003@gmail.com",
 }
 ADMIN_EMAIL = "yh749770@gmail.com"
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
