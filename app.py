@@ -45,6 +45,10 @@ VIDEOS = {
         "title": "מפגש 7 - עבודת בית 5",
         "video_id": "96c8ec8c-d10f-4f61-82e0-1a41426aeba7",
     },
+    "lesson8": {
+        "title": "מפגש 8 - עבודת בית 6",
+        "video_id": "50a5313a-ebd8-498d-a064-716f8eae3880",
+    },
 }
 
 ALLOWED_EMAILS = {
