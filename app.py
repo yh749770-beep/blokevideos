@@ -62,7 +62,7 @@ VIDEOS = {
         "video_id": "1bd4e6f6-5f9d-4f6e-bc7d-78adfdcff6b3",
     },            
     "lesson12": {
-        "title": "מפגש 11 -קו אלסטי, תרגילים ראשונים",
+        "title": "מפגש 12 -קו אלסטי, תרגילים מתקדמים",
         "video_id": "406eae98-4fc7-44b3-a9f0-db72794aea95",
     }, 
 }
